@@ -127,11 +127,35 @@ def viterbi(words, tags, frequency_dict, bigram_dict, sentence_dict):
     B = {}
     tag_list = sentence_dict.keys()
     for t in tag_list:
-        try:
-            V[(t,0)] = sentence_dict[t]*frequency_dict[words[0]][t]
-        except:
-            V[(t,0)] = sentence_dict[t]*0
-        print(V)
+        V[(t,0)] = sentence_dict[t]*frequency_dict[words[0]].get(t,0.01)
+
+    for i in range(1,len(words)):
+        for t in tag_list:
+            pair = argmax(V,tag_list,t,i, bigram_dict)
+            B[(t,i)] = pair[0]
+            V[(t,i)] = pair[1]*frequency_dict[words[i]].get(t,0.01)
+
+    get_best_tag(words,tag_list,V,B)
+
+def argmax(V,tag_list,t,i, bigram_dict):
+    ans=-1
+    best=None
+    for s in tag_list:
+        temp=V[(s,i-1)]*bigram_dict[t][s]
+        if temp > ans:
+            ans = temp
+            best = s
+    return (best,ans)
+
+def get_best_tag(sentence,tag_list,V,B):
+    for i in range(len(sentence)):
+        print('i='+str(i)+' ['+sentence[i]+']')
+        for t in tag_list:
+            if V[(t,i)] != 0:
+                toprint='  '+t+'='+str(V[(t,i)])
+                if i>0:
+                    toprint += ' (from '+B[(t,i)]+')'
+                print(toprint)
 
 def evaluate(words, tags, frequency_dict, bigram_dict, sentence_dict):
     sentence = []
@@ -164,9 +188,5 @@ if __name__ == "__main__":
 
     evaluate(x_train, y_train, tags_frequency_dict, bigram_frequency_dict, sentence_freq_dict)
 
-    test = [['N', 'S', 'U'], ['N'], ['N'], ['N'], ['N'], ['N'], ['N'], ['N', 'S'], ['N', 'S', 'U'], ['S', 'N'], ['S', 'N'], ['N', 'S', 'U'], ['N', 'S', 'H', 'U'], ['S', 'U', 'N'], ['N'], ['N'], ['N'], ['N', 'U', 'H', 'T'], ['N'], ['N'], ['N', 'H', 'U'], ['N', 'H', 'T', 'U', 'S'], ['S', 'N', 'T'], ['N', 'S'], ['N'], ['S', 'N', 'U'], ['N', 'S', 'U'], ['N', 'H'], ['N', 'U'], ['N'], ['N', 'S'], ['S', 'N', 'U'], ['N', 'H'], ['N', 'S'], ['N', 'U', 'S', 'H', 'T'], ['N'], ['N'], ['H', 'N'], ['N'], ['N'], ['N'], ['N'], ['N'], ['N', 'H', 'T'], ['N'], ['N'], ['N'], ['N'], ['N'], ['N', 'U'], ['N'], ['N'], ['N'], ['N'], ['N', 'H', 'T'], ['S', 'U'], ['N'], ['N'], ['N'], ['N'], ['N']]
-    num_of_comb = 1
-    for i in test:
-        num_of_comb *= len(i)
 
 
