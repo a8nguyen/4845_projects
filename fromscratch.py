@@ -28,19 +28,18 @@ def create_train_dev_sets(file):
 
     # find first sentence after 80% datapoints mark
     sentences = words[int(len(words)*0.8):]
-    index = 0
     for sentence in sentences:
         if sentence[0] == "<S>":
             index = sentences.index(sentence)
             index += 1
             break
 
-        for i in range(int(len(words)*0.8+index)):
-            x_train.append(words[i][0])
-            y_train.append(words[i][1])
-        for i in range(int(len(words)*0.8+index), len(words)):
-            x_dev.append(words[i][0])
-            y_dev.append(words[i][1])
+    for i in range(int(len(words)*0.8+index)):
+        x_train.append(words[i][0])
+        y_train.append(words[i][1])
+    for i in range(int(len(words)*0.8+index), len(words)):
+        x_dev.append(words[i][0])
+        y_dev.append(words[i][1])
 
     return x_train, y_train, x_dev, y_dev
 
