@@ -115,59 +115,73 @@ def create_sentence_start_dict(sentences, labels):
 
 
 def predict_from_scratch(sentence, labels, frequency_dict, bigram_dict, sentence_dict):
-    # print(sentence)
-    viterbi(sentence, labels, frequency_dict, bigram_dict, sentence_dict)
-    sequence_of_tags = []
-    # for word in sentence:
-    #     sequence_of_tags.append(list(frequency_dict[word].keys()))
-    # print(sequence_of_tags)
+    tags = viterbi(sentence, labels, frequency_dict, bigram_dict, sentence_dict)
+    return tags
+
 
 def viterbi(words, tags, frequency_dict, bigram_dict, sentence_dict):
     V = {}
     B = {}
     tag_list = sentence_dict.keys()
+    tag_dict = dict.fromkeys(sentence_freq_dict.keys())
+    V[0] = copy.deepcopy(tag_dict)
     for t in tag_list:
-        V[(t,0)] = sentence_dict[t]*frequency_dict[words[0]].get(t,0.01)
-
+        try:
+            V[0][t] = sentence_dict[t]*frequency_dict[words[0]].get(t,0)
+        except:
+            V[0][t] = 0
     for i in range(1,len(words)):
+        V[i] = copy.deepcopy(tag_dict)
+        B[i] = copy.deepcopy(tag_dict)
         for t in tag_list:
             pair = argmax(V,tag_list,t,i, bigram_dict)
-            B[(t,i)] = pair[0]
-            V[(t,i)] = pair[1]*frequency_dict[words[i]].get(t,0.01)
-
-    get_best_tag(words,tag_list,V,B)
+            B[i][t] = pair[0]
+            try:
+                V[i][t] = pair[1]*frequency_dict[words[i]].get(t,0)
+            except:
+                V[i][t] = 0
+    final_labels = get_best_tag(words,tag_list,V,B)
+    return final_labels
 
 def argmax(V,tag_list,t,i, bigram_dict):
     ans=-1
     best=None
     for s in tag_list:
-        temp=V[(s,i-1)]*bigram_dict[t][s]
+        temp=V[i-1][s]*bigram_dict[t][s]
         if temp > ans:
             ans = temp
             best = s
     return (best,ans)
 
 def get_best_tag(sentence,tag_list,V,B):
+    tags = []
     for i in range(len(sentence)):
-        print('i='+str(i)+' ['+sentence[i]+']')
-        for t in tag_list:
-            if V[(t,i)] != 0:
-                toprint='  '+t+'='+str(V[(t,i)])
-                if i>0:
-                    toprint += ' (from '+B[(t,i)]+')'
-                print(toprint)
+        tags.append(max(V[i], key=V[i].get))
+    return tags
 
 def evaluate(words, tags, frequency_dict, bigram_dict, sentence_dict):
     sentence = []
     labels = []
+    final_tags = []
+    correct = 0
+    num = 0
     for i in range(len(words)):
       if words[i]=='<S>':
-        predict_from_scratch(sentence, labels, frequency_dict, bigram_dict, sentence_dict)
+        num+=1
+        final_tags.append(predict_from_scratch(sentence, labels, frequency_dict, bigram_dict, sentence_dict))
+        final_tags.append('N')
         sentence = []
         labels = []
       else:
         sentence.append(words[i])
         labels.append(tags[i])
+    final_tag = [j for i in final_tags for j in i]
+    for i in range(len(tags)):
+        if final_tag[i] == tags[i]:
+            correct += 1
+    accuracy = correct / len(tags)
+    return accuracy
+
 
 if __name__ == "__main__":
     file_name = 'train.tsv'
@@ -186,7 +200,8 @@ if __name__ == "__main__":
 
     sentence_freq_dict = create_sentence_start_dict(x_train, y_train)
 
-    evaluate(x_train, y_train, tags_frequency_dict, bigram_frequency_dict, sentence_freq_dict)
+    training_accuracy = evaluate(x_train, y_train, tags_frequency_dict, bigram_frequency_dict, sentence_freq_dict)
+    dev_accuracy = evaluate(x_dev, y_dev, tags_frequency_dict, bigram_frequency_dict, sentence_freq_dict)
 
 
 
