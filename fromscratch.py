@@ -140,7 +140,7 @@ def viterbi(words, tags, frequency_dict, bigram_dict, sentence_dict):
                 V[i][t] = pair[1]*frequency_dict[words[i]].get(t,0)
             except:
                 V[i][t] = 0
-    final_labels = get_best_tag(words,tag_list,V,B)
+    final_labels = get_best_tag(words, V, B, tag_list)
     return final_labels
 
 def argmax(V,tag_list,t,i, bigram_dict):
@@ -153,11 +153,21 @@ def argmax(V,tag_list,t,i, bigram_dict):
             best = s
     return (best,ans)
 
-def get_best_tag(sentence,tag_list,V,B):
-    tags = []
-    for i in range(len(sentence)):
-        tags.append(max(V[i], key=V[i].get))
-    return tags
+def get_best_tag(sent, V,B, tags):
+    best_ending = None
+    best_max = -1
+
+    for tag in tags:
+        if V[len(sent) - 1][tag] > best_max:
+            best_max = V[len(sent) - 1][tag]
+            best_ending = tag
+    seq = [best_ending]
+
+    for i in reversed(range(1, len(sent))):
+        seq.append(B[i][seq[-1]])
+    #print(len(seq), len(sent))
+    return seq[::-1]
+
 
 def evaluate(words, tags, frequency_dict, bigram_dict, sentence_dict):
     sentence = []
