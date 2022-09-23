@@ -177,6 +177,7 @@ def evaluate(words, tags, frequency_dict, bigram_dict, sentence_dict):
     num = 0
     for i in range(len(words)):
       if words[i]=='<S>':
+        print(i)
         num+=1
         final_tags.append(predict_from_scratch(sentence, labels, frequency_dict, bigram_dict, sentence_dict))
         final_tags.append('N')
@@ -194,11 +195,19 @@ def evaluate(words, tags, frequency_dict, bigram_dict, sentence_dict):
 
 
 if __name__ == "__main__":
-    file_name = 'train.tsv'
 
-    file = load_file(file_name)
-
-    x_train, y_train, x_dev, y_dev = create_train_dev_sets(file)
+    file_train = load_file('train.tsv')
+    file_test = load_file('test.tsv')
+    x_train,y_train,x_dev,y_dev = [],[],[],[]
+    for line in file_train:
+        word = line.strip().split("\t")
+        x_train.append(word[0])
+        y_train.append(word[1])
+    for line in file_test:
+        word = line.strip().split("\t")
+        x_dev.append(word[0])
+        y_dev.append(word[1])
+    #x_train, y_train, x_dev, y_dev = create_train_dev_sets(file)
 
     tags_dict, count_dict = create_hmm_dict(x_train, y_train)
 
@@ -209,8 +218,8 @@ if __name__ == "__main__":
     bigram_frequency_dict = create_bigram_frequency_dict(bigram_dict)
 
     sentence_freq_dict = create_sentence_start_dict(x_train, y_train)
-
-    training_accuracy = evaluate(x_train, y_train, tags_frequency_dict, bigram_frequency_dict, sentence_freq_dict)
+    print("YO")
+    #training_accuracy = evaluate(x_train, y_train, tags_frequency_dict, bigram_frequency_dict, sentence_freq_dict)
     dev_accuracy = evaluate(x_dev, y_dev, tags_frequency_dict, bigram_frequency_dict, sentence_freq_dict)
 
 
