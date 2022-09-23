@@ -161,7 +161,7 @@ def evaluate(words,tags, frequency_dict, bigram_dict, sentence_dict):
     num = 0
     for i in range(len(words)):
       if words[i] == '<S>':
-        print(i)
+        #print(i, end = "\r")
         num += 1
         final_tags.append(predict_from_scratch(
             sentence, frequency_dict, bigram_dict, sentence_dict))
@@ -204,8 +204,7 @@ if __name__ == "__main__":
    
     #training_accuracy = evaluate(
     #    x_train, y_train, tag_to_word, transition_matrix_tag_tag, initial_prob_distrib)
-    dev_accuracy = evaluate(
-        x_dev, y_dev,  emission, tmat, initial_prob_distrib)
+    dev_accuracy = evaluate(x_dev, y_dev,  emission, tmat, initial_prob_distrib)
 
 
 
