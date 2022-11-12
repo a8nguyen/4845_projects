@@ -2,13 +2,14 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.DS_Store
 
 #no data
 *.tsv
 *.zip
+train*/
 # C extensions
 *.so
-*.DS_Store
 # Distribution / packaging
 .Python
 build/
